@@ -26,3 +26,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/reconciliation', [CashReconciliationController::class, 'index'])->name('reconciliation.index');
     Route::post('/reconciliation', [CashReconciliationController::class, 'store'])->name('reconciliation.store');
 });
+
+Route::get('/invoices', [\App\Http\Controllers\InvoiceController::class, 'index'])->name('invoices.index');
+Route::get('/invoices/create', [\App\Http\Controllers\InvoiceController::class, 'create'])->name('invoices.create');
+Route::post('/invoices', [\App\Http\Controllers\InvoiceController::class, 'store'])->name('invoices.store');
+Route::get('/invoices/{invoice}', [\App\Http\Controllers\InvoiceController::class, 'show'])->name('invoices.show');
+Route::get('/invoices/{invoice}/status', [\App\Http\Controllers\InvoiceController::class, 'status'])->name('invoices.status');
+Route::post('/invoices/{invoice}/simulate', [\App\Http\Controllers\InvoiceController::class, 'simulate'])->name('invoices.simulate');
