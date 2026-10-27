@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Domain\Ledger\Services\LedgerService;
+use App\Domain\Branch\Services\BranchService;
 use App\Models\Branch;
 use Illuminate\Http\Request;
 
@@ -15,25 +15,27 @@ class SaleController extends Controller
         return view('sales.create', compact('branches'));
     }
 
-    public function store(Request $request, LedgerService $ledger)
+    public function store(Request $request, BranchService $branches)
     {
         $data = $request->validate([
             'branch_id' => ['required', 'exists:branches,id'],
             'amount' => ['required', 'integer', 'min:1'],
+            'cogs' => ['nullable', 'integer', 'min:0'],
             'entry_date' => ['required', 'date'],
             'description' => ['nullable', 'string', 'max:255'],
         ]);
 
-        $entry = $ledger->postCashSale(
+        $trx = $branches->recordSale(
             (int) $data['branch_id'],
-            (int) $data['amount'],
             $data['entry_date'],
+            (int) $data['amount'],
+            (int) ($data['cogs'] ?? 0),
             $data['description'] ?? null,
+            null,
             $request->user()->id,
         );
 
-        return redirect()
-            ->route('sales.create')
-            ->with('success', "Jurnal #{$entry->id} berhasil diposting (Debit Kas, Kredit Pendapatan Penjualan).");
+        return redirect()->route('sales.create')
+            ->with('success', "Penjualan tercatat, jurnal #{$trx->journal_entry_id} diposting dan ringkasan cabang diperbarui.");
     }
 }

@@ -27,6 +27,9 @@
     <span class="brand">FinFlow</span>
     <a href="{{ route('accounts.index') }}">Daftar Akun (COA)</a>
     <a href="{{ route('sales.create') }}">Input Penjualan Tunai</a>
+    <a href="{{ route('expenses.create') }}">Input Biaya</a>
+    <a href="{{ route('consolidation.index') }}">Konsolidasi</a>
+    <a href="{{ route('reconciliation.index') }}">Rekonsiliasi Kas</a>
     <a href="{{ route('ledger.show', 1) }}">Buku Besar</a>
     <form method="POST" action="{{ route('logout') }}">@csrf
         <button class="btn-light" type="submit">Keluar ({{ auth()->user()->name }})</button>
