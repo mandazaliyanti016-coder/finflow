@@ -33,3 +33,6 @@ Route::post('/invoices', [\App\Http\Controllers\InvoiceController::class, 'store
 Route::get('/invoices/{invoice}', [\App\Http\Controllers\InvoiceController::class, 'show'])->name('invoices.show');
 Route::get('/invoices/{invoice}/status', [\App\Http\Controllers\InvoiceController::class, 'status'])->name('invoices.status');
 Route::post('/invoices/{invoice}/simulate', [\App\Http\Controllers\InvoiceController::class, 'simulate'])->name('invoices.simulate');
+
+Route::get('/reports', [\App\Http\Controllers\ReportController::class, 'index'])->name('reports.index');
+Route::get('/reports/excel', [\App\Http\Controllers\ReportController::class, 'excel'])->name('reports.excel');
