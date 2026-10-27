@@ -1,0 +1,37 @@
+services:
+  app:
+    build: ./docker/php
+    user: "1000:1000"
+    working_dir: /var/www
+    volumes:
+      - ./src:/var/www
+    command: php artisan serve --host=0.0.0.0 --port=8000
+    ports:
+      - "8000:8000"
+    depends_on: [db, redis]
+
+  queue:
+    build: ./docker/php
+    user: "1000:1000"
+    working_dir: /var/www
+    volumes:
+      - ./src:/var/www
+    command: php artisan queue:work --tries=3
+    depends_on: [db, redis]
+
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: finflow
+      POSTGRES_USER: finflow
+      POSTGRES_PASSWORD: secret
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7
+
+volumes:
+  pgdata:
