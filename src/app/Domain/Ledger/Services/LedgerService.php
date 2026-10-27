@@ -11,6 +11,7 @@ class LedgerService
 {
     public const ACC_CASH = '1-1000';
     public const ACC_SALES = '4-1000';
+    public const ACC_BANK = '1-1100';
 
     public function __construct(private JournalRepository $journals)
     {
@@ -44,6 +45,27 @@ class LedgerService
             'created_by' => $userId,
         ], [
             ['account_id' => $ids[self::ACC_CASH], 'debit' => $amount],
+            ['account_id' => $ids[self::ACC_SALES], 'credit' => $amount],
+        ]);
+    }
+
+    /** Pembayaran QRIS lunas => Debit Bank, Kredit Pendapatan Penjualan. */
+    public function postQrisPayment(int $branchId, int $amount, string $date, int $paymentId, ?string $description = null): JournalEntry
+    {
+        $ids = $this->journals->accountIdsByCode([self::ACC_BANK, self::ACC_SALES]);
+        if (count($ids) < 2) {
+            throw new InvalidArgumentException('Akun Bank/Pendapatan belum ada. Jalankan seeder COA.');
+        }
+
+        return $this->post([
+            'entry_date' => $date,
+            'branch_id' => $branchId,
+            'description' => $description ?? 'Pembayaran QRIS',
+            'source_type' => 'qris_payment',
+            'source_id' => $paymentId,
+            'created_by' => null,
+        ], [
+            ['account_id' => $ids[self::ACC_BANK], 'debit' => $amount],
             ['account_id' => $ids[self::ACC_SALES], 'credit' => $amount],
         ]);
     }

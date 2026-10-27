@@ -35,4 +35,7 @@ return [
         ],
     ],
 
+
+    'qris' => ['webhook_secret' => env('QRIS_WEBHOOK_SECRET', 'dev-secret')],
+
 ];
