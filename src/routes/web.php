@@ -36,3 +36,7 @@ Route::post('/invoices/{invoice}/simulate', [\App\Http\Controllers\InvoiceContro
 
 Route::get('/reports', [\App\Http\Controllers\ReportController::class, 'index'])->name('reports.index');
 Route::get('/reports/excel', [\App\Http\Controllers\ReportController::class, 'excel'])->name('reports.excel');
+
+Route::post('/reports/pdf', [\App\Http\Controllers\ReportController::class, 'pdf'])->name('reports.pdf');
+Route::get('/reports/exports/{export}/status', [\App\Http\Controllers\ReportController::class, 'exportStatus'])->name('reports.exports.status');
+Route::get('/reports/exports/{export}/download', [\App\Http\Controllers\ReportController::class, 'exportDownload'])->name('reports.exports.download');

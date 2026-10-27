@@ -4,7 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Domain\Reporting\Services\ReportService;
 use Illuminate\Http\Request;
+use App\Jobs\GenerateReportPdf;
+use App\Models\ReportExport;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
@@ -77,6 +80,30 @@ class ReportController extends Controller
             "laporan-keuangan-$from-$to.xlsx",
             ['Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']
         );
+    }
+
+    public function pdf(Request $request)
+    {
+        [$from, $to, $branchId, $wp] = $this->params($request);
+        $export = ReportExport::create(['params' => compact('from', 'to') + ['branch_id' => $branchId, 'wp' => $wp]]);
+        GenerateReportPdf::dispatch($export->id);
+        return response()->json(['id' => $export->id]);
+    }
+
+    public function exportStatus(ReportExport $export)
+    {
+        return response()->json([
+            'status' => $export->status,
+            'error' => $export->error,
+            'duration_ms' => $export->duration_ms,
+            'url' => $export->status === 'done' ? route('reports.exports.download', $export) : null,
+        ]);
+    }
+
+    public function exportDownload(ReportExport $export)
+    {
+        abort_unless($export->status === 'done' && Storage::disk('local')->exists($export->file_path), 404);
+        return Storage::disk('local')->download($export->file_path, "laporan-keuangan-{$export->id}.pdf");
     }
 
     private function params(Request $request): array

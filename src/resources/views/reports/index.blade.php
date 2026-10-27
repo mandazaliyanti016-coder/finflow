@@ -40,6 +40,35 @@
     <button class="btn" type="submit">Tampilkan</button>
     <a class="btn" href="{{ route('reports.excel', request()->query()) }}">Unduh Excel</a>
 </form>
+<p>
+    <button class="btn" id="btn-pdf" type="button">Buat PDF</button>
+    <span id="pdf-status" class="muted"></span>
+</p>
+<script>
+document.getElementById('btn-pdf').addEventListener('click', function () {
+    var st = document.getElementById('pdf-status');
+    st.textContent = 'Mengantrekan...';
+    var body = new URLSearchParams({_token: @json(csrf_token()), from: @json($from), to: @json($to), branch_id: @json($branchId ?? ''), wp: @json($wp)});
+    fetch(@json(route('reports.pdf')), {method: 'POST', body: body, headers: {'Accept': 'application/json'}})
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+            st.textContent = 'Menunggu worker (antrean)...';
+            var t = setInterval(function () {
+                fetch('/reports/exports/' + d.id + '/status').then(function (r) { return r.json(); }).then(function (x) {
+                    if (x.status === 'done') {
+                        clearInterval(t);
+                        st.innerHTML = 'Selesai (' + x.duration_ms + ' ms) <a class="btn" href="' + x.url + '">Unduh PDF</a>';
+                    } else if (x.status === 'failed') {
+                        clearInterval(t);
+                        st.textContent = 'Gagal: ' + x.error;
+                    } else {
+                        st.textContent = 'Status: ' + x.status + '...';
+                    }
+                });
+            }, 1500);
+        });
+});
+</script>
 <p class="muted">Laporan dibuat dalam <strong id="ms">{{ $ms }}</strong> ms.</p>
 
 <h2>Neraca Saldo</h2>
