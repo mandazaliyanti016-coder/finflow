@@ -15,6 +15,7 @@
 <body>
     <h1>{{ $invoice->invoice_number }}</h1>
     <h2>Rp {{ number_format($invoice->amount, 0, ',', '.') }}</h2>
+    <p>Link pembayaran:<br><a href="{{ route('pay.show', $invoice->external_ref) }}">{{ route('pay.show', $invoice->external_ref) }}</a></p>
     <p>Status: <span id="status" class="badge {{ $invoice->status }}">{{ $invoice->status }}</span></p>
 
     @if(session('result'))

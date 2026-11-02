@@ -74,7 +74,7 @@ class InvoiceController extends Controller
         $res = app(PaymentWebhookController::class)->handle($req, $ledger);
         $result = $res->getData(true)['status'] ?? 'unknown';
 
-        return redirect()->route('invoices.show', $invoice)->with('result', $result);
+        return redirect()->back()->with('result', $result);
     }
 
     private function expireIfNeeded(Invoice $invoice): void

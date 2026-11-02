@@ -40,3 +40,5 @@ Route::get('/reports/excel', [\App\Http\Controllers\ReportController::class, 'ex
 Route::post('/reports/pdf', [\App\Http\Controllers\ReportController::class, 'pdf'])->name('reports.pdf');
 Route::get('/reports/exports/{export}/status', [\App\Http\Controllers\ReportController::class, 'exportStatus'])->name('reports.exports.status');
 Route::get('/reports/exports/{export}/download', [\App\Http\Controllers\ReportController::class, 'exportDownload'])->name('reports.exports.download');
+
+Route::get('/pay/{ref}', [\App\Http\Controllers\PayController::class, 'show'])->name('pay.show');
