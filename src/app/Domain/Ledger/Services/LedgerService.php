@@ -57,17 +57,31 @@ class LedgerService
             throw new InvalidArgumentException('Akun Bank/Pendapatan belum ada. Jalankan seeder COA.');
         }
 
-        return $this->post([
-            'entry_date' => $date,
-            'branch_id' => $branchId,
-            'description' => $description ?? 'Pembayaran QRIS',
-            'source_type' => 'qris_payment',
-            'source_id' => $paymentId,
-            'created_by' => null,
-        ], [
-            ['account_id' => $ids[self::ACC_BANK], 'debit' => $amount],
-            ['account_id' => $ids[self::ACC_SALES], 'credit' => $amount],
-        ]);
+        return \Illuminate\Support\Facades\DB::transaction(function () use ($branchId, $amount, $date, $paymentId, $description, $ids) {
+            $entry = $this->post([
+                'entry_date' => $date,
+                'branch_id' => $branchId,
+                'description' => $description ?? 'Pembayaran QRIS',
+                'source_type' => 'qris_payment',
+                'source_id' => $paymentId,
+                'created_by' => null,
+            ], [
+                ['account_id' => $ids[self::ACC_BANK], 'debit' => $amount],
+                ['account_id' => $ids[self::ACC_SALES], 'credit' => $amount],
+            ]);
+
+            // Ringkasan harian konsolidasi, satu transaksi dengan jurnal
+            \Illuminate\Support\Facades\DB::statement('
+                INSERT INTO branch_daily_summary (branch_id, summary_date, revenue, cogs, gross_profit, opex, created_at, updated_at)
+                VALUES (?, ?, ?, 0, ?, 0, now(), now())
+                ON CONFLICT (branch_id, summary_date) DO UPDATE SET
+                    revenue = branch_daily_summary.revenue + EXCLUDED.revenue,
+                    gross_profit = (branch_daily_summary.revenue + EXCLUDED.revenue) - branch_daily_summary.cogs,
+                    updated_at = now()
+            ', [$branchId, $date, $amount, $amount]);
+
+            return $entry;
+        });
     }
 
     /** FR-1.4: koreksi lewat jurnal pembalik (debit dan kredit ditukar). */
